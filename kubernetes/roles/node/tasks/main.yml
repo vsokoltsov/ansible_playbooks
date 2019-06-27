@@ -1,0 +1,12 @@
+---
+- include_tasks: roles/default.yml
+- name: Copy the join command to server location
+  copy: 
+    src: roles/join-command 
+    dest: /tmp/join-command.sh 
+    mode: 0777
+  run_once: yes
+
+- name: Join the node to cluster
+  shell: sh /tmp/join-command.sh
+  run_once: yes

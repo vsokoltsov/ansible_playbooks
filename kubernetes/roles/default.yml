@@ -1,0 +1,95 @@
+---
+- name: install python 2
+  raw: test -e /usr/bin/python || (yum -y update && yum install -y python-minimal)
+
+- name: 'Install epel-release'
+  yum: 
+    name: epel-release 
+    state: present
+
+- name: 'Override /etc/hosts file'
+  copy:
+    src: roles/hosts
+    dest: /etc/hosts
+    force: true
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: Add firewall rules
+  firewalld:
+    port: "{{ item }}/tcp"
+    permanent: yes
+    state: enabled
+  with_items:
+    - '6443'
+    - '2379-2380'
+    - '10250'
+    - '10251'
+    - '10252'
+    - '10255'
+
+- name: Add kernel br_netfilter module
+  modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Override iptables rule
+  shell: echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables
+
+- name: Copy kubernetes.repo
+  copy:
+    src: roles/kubernetes.repo
+    dest: /etc/yum.repos.d/kubernetes.repo
+
+- name: Disable SWAP since kubernetes can't work with swap enabled (1/2)
+  shell: |
+    swapoff -a
+
+- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
+  replace:
+    path: /etc/fstab
+    regexp: '^(.+?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
+
+- name: Add repository
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docer-ce.repo
+
+- name: Install dependencies
+  yum:
+    name: ['yum-utils', 'device-mapper-persistent-data', 'lvm2', 'docker-ce', 'kubelet', 'kubeadm', 'kubectl']
+    state: present
+
+- name: Create a /etc/docker directory
+  file:
+    path: /etc/docker
+    state: directory
+
+- name: Replace docker daemon config
+  copy:
+    src: roles/daemon.json
+    dest: /etc/docker/daemon.json
+  run_once: yes
+
+- name: Enable services
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - docker
+    - kubelet
+  run_once: yes
+
+- name: Restart services
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: "{{ item }}"
+  with_items:
+    - docker
+    - kubelet
+  run_once: yes

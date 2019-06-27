@@ -1,0 +1,13 @@
+---
+- name: "Master's setup"
+  hosts: master
+  become: True
+  roles:
+    - master
+
+- name: Configure web
+  hosts: slave1, slave2
+  become: True
+  gather_facts: no
+  roles:
+    - node
