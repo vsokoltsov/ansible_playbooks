@@ -84,6 +84,13 @@
     - kubelet
   run_once: yes
 
+- name: Configure node ip
+  lineinfile:
+    path: /etc/default/kubelet
+    line: KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
+    state: present
+    create: yes
+
 - name: Restart services
   systemd:
     state: restarted
