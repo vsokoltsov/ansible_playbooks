@@ -30,6 +30,12 @@
   when: not kubeadm_ca.stat.exists
   run_once: yes
 
+- name: Install Dashboard
+  become: false
+  shell: kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/alternative/kubernetes-dashboard.yaml
+  when: not kubeadm_ca.stat.exists
+  run_once: yes
+
 - name: Generate join command
   shell: kubeadm token create --print-join-command
   register: join_command

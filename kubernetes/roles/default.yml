@@ -23,6 +23,7 @@
     permanent: yes
     state: enabled
   with_items:
+    - '8001'
     - '6443'
     - '2379-2380'
     - '10250'
@@ -43,15 +44,15 @@
     src: roles/kubernetes.repo
     dest: /etc/yum.repos.d/kubernetes.repo
 
-- name: Disable SWAP since kubernetes can't work with swap enabled (1/2)
+- name: Disable SWAP from /etc/fstab
+  mount:
+    name: swap
+    fstype: swap
+    state: absent
+
+- name: Disable SWAP since kubernetes can't work with swap enabled
   shell: |
     swapoff -a
-
-- name: Disable SWAP in fstab since kubernetes can't work with swap enabled (2/2)
-  replace:
-    path: /etc/fstab
-    regexp: '^(.+?\sswap\s+sw\s+.*)$'
-    replace: '# \1'
 
 - name: Add repository
   get_url:
