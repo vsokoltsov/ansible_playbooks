@@ -26,7 +26,7 @@
 
 - name: Install Pod network
   become: false
-  shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/62e44c867a2846fefb68bd5f178daf4da3095ccb/Documentation/kube-flannel.yml
+  shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/2140ac876ef134e0ed5af15c65e414cf26827915/Documentation/kube-flannel.yml
   when: not kubeadm_ca.stat.exists
   run_once: yes
 
