@@ -11,7 +11,7 @@
   register: kubeadm_ca
 
 - name: Initialize Kubernetes cluster using kubeadm
-  shell: kubeadm init --apiserver-advertise-address="{{ node_ip }}" --apiserver-cert-extra-sans="{{ node_ip }}"  --node-name k8s-master --pod-network-cidr=10.244.0.0/16
+  shell: kubeadm init --apiserver-advertise-address="{{ node_ip }}" --apiserver-cert-extra-sans="{{ node_ip }}" --node-name k8s-master --pod-network-cidr=10.244.0.0/16
   when: not kubeadm_ca.stat.exists
   run_once: yes
 
@@ -32,7 +32,13 @@
 
 - name: Install Dashboard
   become: false
-  shell: kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/alternative/kubernetes-dashboard.yaml
+  shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml
+  when: not kubeadm_ca.stat.exists
+  run_once: yes
+
+- name: Apply dashboard ingress config
+  become: false
+  shell: kubectl apply -f /home/vagrant/kubernetes/dashboard.yaml
   when: not kubeadm_ca.stat.exists
   run_once: yes
 
@@ -46,3 +52,17 @@
     content: "{{ join_command.stdout_lines[0] }}" 
     dest: "roles/join-command"
   delegate_to: localhost
+
+- name: Create a 'certs' directory
+  file:
+    path: /home/vagrant/kubernetes/certs
+    state: directory
+
+- name: Copy client-certified-data key 
+  shell: grep 'client-certificate-data' /home/vagrant/.kube/config | head -n 1 | awk '{print $2}' | base64 -d >> /home/vagrant/kubernetes/certs/kubecfg.crt
+
+- name: Copy client-key-data
+  shell: grep 'client-key-data' /home/vagrant/.kube/config | head -n 1 | awk '{print $2}' | base64 -d >> /home/vagrant/kubernetes/certs/kubecfg.key
+
+- name: Generate pk12 key
+  shell: openssl pkcs12 -export -clcerts -inkey /home/vagrant/kubernetes/certs/kubecfg.key -in /home/vagrant/kubernetes/certs/kubecfg.crt -out /home/vagrant/kubernetes/certs/kubecfg.p12 -passout pass:"1234" -name 'kubernetes-client'

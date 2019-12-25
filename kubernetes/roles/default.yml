@@ -61,7 +61,7 @@
 
 - name: Install dependencies
   yum:
-    name: ['yum-utils', 'device-mapper-persistent-data', 'lvm2', 'docker-ce', 'kubelet', 'kubeadm', 'kubectl']
+    name: ['yum-utils', 'device-mapper-persistent-data', 'lvm2', 'docker-ce', 'kubelet', 'kubeadm', 'kubectl', 'varnish', 'git', 'bc']
     state: present
 
 - name: Create a /etc/docker directory

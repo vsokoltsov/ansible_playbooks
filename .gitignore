@@ -1,2 +1,4 @@
 .vagrant
 join-command
+admin_token
+certs
