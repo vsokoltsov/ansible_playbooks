@@ -2,8 +2,7 @@
 - include_tasks: roles/default.yml
 
 - name: Change hostname
-  hostname:
-    name: k8s-master
+  shell: hostnamectl set-hostname k8s-master
 
 - name: Check if cluster has already been initialized
   stat:
@@ -32,7 +31,7 @@
 
 - name: Install Dashboard
   become: false
-  shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta4/aio/deploy/recommended.yaml
+  shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
   when: not kubeadm_ca.stat.exists
   run_once: yes
 
@@ -57,12 +56,20 @@
   file:
     path: /home/vagrant/kubernetes/certs
     state: directory
+  when: not kubeadm_ca.stat.exists
+  run_once: yes
 
 - name: Copy client-certified-data key 
   shell: grep 'client-certificate-data' /home/vagrant/.kube/config | head -n 1 | awk '{print $2}' | base64 -d >> /home/vagrant/kubernetes/certs/kubecfg.crt
+  when: not kubeadm_ca.stat.exists
+  run_once: yes
 
 - name: Copy client-key-data
   shell: grep 'client-key-data' /home/vagrant/.kube/config | head -n 1 | awk '{print $2}' | base64 -d >> /home/vagrant/kubernetes/certs/kubecfg.key
+  when: not kubeadm_ca.stat.exists
+  run_once: yes
 
 - name: Generate pk12 key
   shell: openssl pkcs12 -export -clcerts -inkey /home/vagrant/kubernetes/certs/kubecfg.key -in /home/vagrant/kubernetes/certs/kubecfg.crt -out /home/vagrant/kubernetes/certs/kubecfg.p12 -passout pass:"1234" -name 'kubernetes-client'
+  when: not kubeadm_ca.stat.exists
+  run_once: yes

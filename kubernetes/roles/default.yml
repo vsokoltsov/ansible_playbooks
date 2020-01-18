@@ -24,6 +24,7 @@
     state: enabled
   with_items:
     - '8001'
+    - '443'
     - '6443'
     - '2379-2380'
     - '10250'
@@ -45,10 +46,9 @@
     dest: /etc/yum.repos.d/kubernetes.repo
 
 - name: Disable SWAP from /etc/fstab
-  mount:
-    name: swap
-    fstype: swap
-    state: absent
+  shell: |
+    sed -i.bak -r 's/(.+ swap .+)/#\1/' /etc/fstab
+    mount -a
 
 - name: Disable SWAP since kubernetes can't work with swap enabled
   shell: |
