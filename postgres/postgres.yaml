@@ -1,0 +1,77 @@
+---
+- hosts: all
+  become: true
+  vars:
+    postgres_version: 10
+    postgres_setup_path: /usr/pgsql-10/bin/postgresql-10-setup
+    postgres_data_path: /var/lib/pgsql
+    pg_hba_conf_path: "{{ postgres_data_path }}/{{ postgres_version }}/data/pg_hba.conf"
+  tasks:
+    - name: Install EPEL repo
+      yum:
+        name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm
+        state: present
+
+    - name: Import EPEL GPG key.
+      rpm_key:
+        key: /etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}
+        state: present
+  
+    - name: Add postgres remote repo
+      yum:
+        name: https://yum.postgresql.org/10/redhat/rhel-7-x86_64/pgdg-centos10-10-2.noarch.rpm
+        state: present
+    
+    - name: Install necessary packages
+      yum:
+        name:
+        - postgresql10-server
+        - postgresql10
+        - python-psycopg2
+        - python-setuptools
+        state: present
+
+    - name: Check if postgres database has already been initialized
+      stat:
+        path: "{{pg_hba_conf_path}}"
+      register: postgres_data_dir
+
+    - name: Init database
+      shell: "{{ postgres_setup_path }} initdb"
+      when: not postgres_data_dir.stat.exists
+      register: initialization_db
+
+    - name: Start postgresql service
+      systemd:
+        name: postgresql-10
+        enabled: yes
+        state: started
+
+    - name: Allow connection from host machine
+      lineinfile: 
+        dest: "{{ pg_hba_conf_path }}"
+        regexp: "^host+all+all+127.0.0.1/32+ident"
+        insertafter: "^# IPv4 local.+"
+        line: "host all all 0.0.0.0/0 trust" 
+        state: present 
+        backup: yes
+      when: initialization_db is not skipped
+
+
+    - name: Update postgresql.conf to listen to all of the addresses
+      lineinfile: 
+        dest: "{{postgres_data_path}}/{{postgres_version}}/data/postgresql.conf"
+        regexp: "^#listen_addresses" 
+        line: "listen_addresses = '*'" 
+        state: present 
+        backup: yes
+      when: initialization_db is not skipped
+    
+    - name: Update postgres password
+      become_user: postgres
+      shell: bash -c "psql -c \"ALTER USER postgres PASSWORD 'postgres';\""
+
+    - name: Retart postgresql service
+      systemd:
+        name: postgresql-10
+        state: restarted
