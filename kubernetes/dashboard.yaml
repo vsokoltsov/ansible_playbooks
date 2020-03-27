@@ -30,7 +30,8 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: 8443
+  - name: kubernetes-dashboard-service
+    port: 8443
     nodePort: 30002
     targetPort: 8443
     protocol: TCP
