@@ -12,7 +12,7 @@ output "ssh_public_key_path" {
 }
 
 output "ansible_hosts" {
-  value = abspath(vars.ansible_hosts)
+  value = abspath(var.ansible_hosts)
 }
 
 output "ssh_user" {
