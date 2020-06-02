@@ -1,0 +1,52 @@
+- hosts: all
+  become: true
+  tasks:
+    - name: Add Docker repository
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docer-ce.repo
+      run_once: yes
+
+    - name: Install dependencies
+      yum:
+        name: 
+          - epel-release
+          - yum-utils
+          - device-mapper-persistent-data
+          - lvm2
+          - docker-ce
+          - git
+          - python3-pip
+        state: present
+
+    - name: Add user to the docker group
+      user:
+        name: ansible
+        groups: docker
+        append: true
+
+    - name: Enable service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Replace docker daemon config
+      copy:
+        src: ./config/daemon.json
+        dest: /etc/docker/daemon.json
+
+    - name: Restart docker service
+      systemd:
+        name: docker
+        state: restarted
+        daemon_reload: yes
+
+    - name: Install docker-compose via pip
+      pip:
+        name: docker-compose
+        executable: pip3
+    
+
+    
