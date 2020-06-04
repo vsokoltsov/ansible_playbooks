@@ -1,6 +1,18 @@
 - hosts: all
   become: true
+  vars:
+    shell_executor_labels: 
+      - 'shell-executor'
+      - "gitlab-runner-{{ hostvars[inventory_hostname].ansible_distribution.lower() }}"
+    docker_executor_labels:
+      - 'docker-executor'
+      - "gitlab-runner-{{ hostvars[inventory_hostname].ansible_distribution.lower() }}"
+    docker_executor_image: "docker:latest"
+
   tasks:
+    - name: Add gitlab-runner repo
+      shell: curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh | sudo bash
+
     - name: Add Docker repository
       get_url:
         url: https://download.docker.com/linux/centos/docker-ce.repo
@@ -17,6 +29,7 @@
           - docker-ce
           - git
           - python3-pip
+          - gitlab-runner
         state: present
 
     - name: Add user to the docker group
@@ -48,5 +61,29 @@
         name: docker-compose
         executable: pip3
     
+    - name: Register gitlab shell runner
+      shell: |
+        gitlab-runner register -n \
+        --url {{ gitlab_url }} \
+        --registration-token {{ registration_token }} \
+        --executor {{ executor }} \
+        --description "Shell runner" \
+        --tag-list {{ shell_executor_labels | join(',') }}
+      when: executor == 'shell'
+      run_once: true
+
+    - name: Register gitlab docker runner
+      shell: |
+        gitlab-runner register -n \
+        --url {{ gitlab_url }} \
+        --registration-token {{ registration_token }} \
+        --executor {{ executor }} \
+        --description "Docker runner" \
+        --docker-image {{ docker_executor_image }}
+        --docker-privileged
+        --tag-list {{ docker_executor_labels | join(',') }}
+      when: executor == 'docker'
+      run_once: true
+
 
     

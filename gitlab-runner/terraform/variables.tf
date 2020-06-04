@@ -18,7 +18,7 @@ variable "ansible_hosts" {
 }
 
 provider "google" {
-    credentials = file(pathexpand("../credentials/serviceaccount.json"))
+    credentials = file(abspath("credentials/serviceaccount.json"))
     project     = "blog-276519"
     region      = "us-central1"
 }

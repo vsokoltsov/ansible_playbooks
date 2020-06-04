@@ -21,17 +21,18 @@ resource "google_compute_firewall" "http-server" {
 }
 
 data "template_file" "hosts" {
-    template = file(pathexpand("../playbook/host_template.tpl"))
+    template = "${file(abspath("playbook/host_template.tpl"))}"
     depends_on = [
         google_compute_address.static
     ]
     vars = {
         vm_ip = "${google_compute_address.static.address}"
+        ansible_user = "${var.ssh_username}"
     }
 }
 
 resource "google_compute_instance" "default" {
-    name         = "blog-${random_id.instance_id.hex}"
+    name         = "gitlab-runner-${random_id.instance_id.hex}"
     machine_type = "f1-micro"
     zone         = "us-central1-a"
 
@@ -45,7 +46,7 @@ resource "google_compute_instance" "default" {
     # metadata_startup_script = "sudo yum install -y nginx && sudo systemctl start nginx && sudo systemctl enable nginx"
 
     metadata = {
-        ssh-keys = "${var.ssh_username}:${file(pathexpand(var.ssh_pub_key_path))}"
+        ssh-keys = "${var.ssh_username}:${file(abspath(var.ssh_pub_key_path))}"
     }  
 
     tags = ["http-server"]
@@ -59,8 +60,8 @@ resource "google_compute_instance" "default" {
     }
 
     provisioner "local-exec" {
-        command = <<EOT
-            echo '${data.template_file.hosts.rendered}' > '${pathexpand(var.ansible_hosts)}'
-        EOT 
+        command = <<EOF
+            echo '${data.template_file.hosts.rendered}' > '${abspath(var.ansible_hosts)}'
+        EOF
     }
 }

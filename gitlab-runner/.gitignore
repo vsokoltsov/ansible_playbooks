@@ -1,4 +1,5 @@
 .terraform
 terraform.tfstate*
 serviceaccount.json
-hosts
+hosts.yaml
+.env
