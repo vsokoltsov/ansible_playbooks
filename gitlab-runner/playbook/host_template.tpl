@@ -1,1 +1,0 @@
-${vm_ip} user=ansible ansible_ssh_common_args="-o ConnectionAttempts=20 -o ConnectTimeout=10"

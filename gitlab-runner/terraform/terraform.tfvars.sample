@@ -1,0 +1,6 @@
+ssh_username = 
+ssh_pub_key_path = 
+ssh_private_key_path =
+registration_token = 
+gitlab_url = 
+executor = 

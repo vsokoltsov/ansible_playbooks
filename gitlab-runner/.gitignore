@@ -1,5 +1,7 @@
 .terraform
 terraform.tfstate*
 serviceaccount.json
-hosts*
+credentials/
+inventory.ini
 .env
+terraform.tfvars

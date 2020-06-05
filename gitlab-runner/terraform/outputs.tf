@@ -11,10 +11,18 @@ output "ssh_public_key_path" {
   value = abspath(var.ssh_pub_key_path)
 }
 
-output "ansible_hosts" {
-  value = abspath(var.ansible_hosts)
-}
-
 output "ssh_user" {
   value = var.ssh_username
+}
+
+output "registration_token" {
+  value = var.registration_token
+}
+
+output "gitlab_url" {
+  value = var.gitlab_url
+}
+
+output "executor" {
+  value = var.executor
 }

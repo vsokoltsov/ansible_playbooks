@@ -21,13 +21,14 @@ resource "google_compute_firewall" "http-server" {
 }
 
 data "template_file" "hosts" {
-    template = "${file(abspath("playbook/host_template.tpl"))}"
+    template = "${file(abspath("inventory.tpl"))}"
     depends_on = [
         google_compute_address.static
     ]
     vars = {
-        vm_ip = "${google_compute_address.static.address}"
+        public_ip = "${google_compute_address.static.address}"
         ansible_user = "${var.ssh_username}"
+        ssh_private_key = "${var.ssh_private_key_path}"
     }
 }
 
@@ -41,9 +42,6 @@ resource "google_compute_instance" "default" {
             image = "centos-7-v20200429"
         }
     }
-
-// Make sure flask is installed on all new instances for later steps
-    # metadata_startup_script = "sudo yum install -y nginx && sudo systemctl start nginx && sudo systemctl enable nginx"
 
     metadata = {
         ssh-keys = "${var.ssh_username}:${file(abspath(var.ssh_pub_key_path))}"
@@ -61,7 +59,11 @@ resource "google_compute_instance" "default" {
 
     provisioner "local-exec" {
         command = <<EOF
-            echo '${data.template_file.hosts.rendered}' > '${abspath(var.ansible_hosts)}'
+            echo '${data.template_file.hosts.rendered}' > inventory.ini
+            ansible-playbook \
+                -i inventory.ini \
+                -e "registration_token=${var.registration_token} gitlab_url=${var.gitlab_url} executor=${var.executor}" \
+                playbook.yml
         EOF
     }
 }

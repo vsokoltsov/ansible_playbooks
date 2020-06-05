@@ -1,0 +1,13 @@
+{
+    "builders": [
+        {
+            "type": "googlecompute",
+            "account_file": "account.json",
+            "project_id": "blog-276519",
+            "source_image": "centos-7-v20200429",
+            "ssh_username": "ansible",
+            "zone": "us-central1",
+            "tags": ["http-server"]
+        }
+    ]
+}

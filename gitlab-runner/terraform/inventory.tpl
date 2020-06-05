@@ -1,0 +1,1 @@
+${public_ip} user=${ansible_user} ansible_ssh_private_key_file=${ssh_private_key} ansible_ssh_common_args="-o ConnectionAttempts=20 -o ConnectTimeout=10"
