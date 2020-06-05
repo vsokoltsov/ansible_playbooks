@@ -2,6 +2,7 @@
 
 ## Pre-Run
 
+* Add `Google Cloud` account credentials inside the `credentials` folder
 * `cd terraform`
 * Populate `terraform.tfvars` based on its keys values
 
