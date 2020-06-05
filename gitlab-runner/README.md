@@ -3,17 +3,18 @@
 ## Pre-Run
 
 * Generate ssh keys (if you want to use custom. Default are provided in `credentials` section)
+* `chmod +x resources.sh`
 * Populate environment variables in `.env` file (sample of variables in `.env.sample`)
-* `make init`
+* `./resources.sh init`
 
 ## Run
 
-* `make apply`
+* `./resources.sh apply`
 
 ## Plan
 
-* `make plan`
+* `./resources.sh  plan`
 
 ## Destroy
 
-* `make destroy`
+* `./resources.sh  destroy`

@@ -1,9 +1,9 @@
-resource "google_compute_address" "static" {
-  name = "ipv4-address"
-}
-
 resource "random_id" "instance_id" {
     byte_length = 8
+}
+
+resource "google_compute_address" "static" {
+  name = "ipv4-address-${random_id.instance_id.hex}"
 }
 
 resource "google_compute_firewall" "http-server" {

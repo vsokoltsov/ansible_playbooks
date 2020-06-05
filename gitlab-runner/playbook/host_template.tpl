@@ -1,7 +1,1 @@
-all:
-  hosts:
-    default:
-      host_key_checking: false
-      ansible_host: ${vm_ip}
-      ansible_user: ${ansible_user}
-      ansible_port: 22
+${vm_ip} user=ansible ansible_ssh_common_args="-o ConnectionAttempts=20 -o ConnectTimeout=10"
