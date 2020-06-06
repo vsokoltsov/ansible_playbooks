@@ -79,11 +79,15 @@
         --registration-token {{ registration_token }} \
         --executor {{ executor }} \
         --description "Docker runner" \
-        --docker-image {{ docker_executor_image }}
-        --docker-privileged
+        --docker-image {{ docker_executor_image }} \
+        --docker-privileged \
+        --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
         --tag-list {{ docker_executor_labels | join(',') }}
       when: executor == 'docker'
       run_once: true
 
-
-    
+    - name: Add user to the docker group
+      user:
+        name: gitlab-runner
+        groups: docker
+        append: true
