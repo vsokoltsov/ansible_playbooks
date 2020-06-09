@@ -4,3 +4,4 @@ ssh_private_key_path =
 registration_token = 
 gitlab_url = 
 executor = 
+docker_options

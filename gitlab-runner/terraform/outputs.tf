@@ -1,6 +1,6 @@
 output "vm_ip" {
   description = "IP address for generated compute instance"
-  value = google_compute_address.static.address
+  value = google_compute_address.static.*.address
 }
 
 output "ssh_private_key_path" {

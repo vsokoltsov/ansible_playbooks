@@ -28,6 +28,11 @@ variable "executor" {
     description = "Gitlab executor type. Possible values are shell|docker"
 }
 
+variable "docker_options" {
+    type = list
+    description = "Options for the docker runner."
+}
+
 provider "google" {
     credentials = file(abspath("../credentials/serviceaccount.json"))
     project     = "blog-276519"

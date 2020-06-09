@@ -5,7 +5,7 @@
       - 'shell-executor'
       - "gitlab-runner-{{ hostvars[inventory_hostname].ansible_distribution.lower() }}"
     docker_executor_labels:
-      - 'docker-executor'
+      - "{{ ['docker', 'executor', option] | join('-') }}"
       - "gitlab-runner-{{ hostvars[inventory_hostname].ansible_distribution.lower() }}"
     docker_executor_image: "docker:latest"
 
@@ -72,7 +72,7 @@
       when: executor == 'shell'
       run_once: true
 
-    - name: Register gitlab docker runner
+    - name: Register gitlab docker runner with privileged mode
       shell: |
         gitlab-runner register -n \
         --url {{ gitlab_url }} \
@@ -81,9 +81,21 @@
         --description "Docker runner" \
         --docker-image {{ docker_executor_image }} \
         --docker-privileged \
+        --tag-list {{ docker_executor_labels | join(',') }}
+      when: executor == 'docker' and option == 'privileged'
+      run_once: true
+
+    - name: Register gitlab docker runner with sockets mode
+      shell: |
+        gitlab-runner register -n \
+        --url {{ gitlab_url }} \
+        --registration-token {{ registration_token }} \
+        --executor {{ executor }} \
+        --description "Docker runner" \
+        --docker-image {{ docker_executor_image }} \
         --docker-volumes /var/run/docker.sock:/var/run/docker.sock \
         --tag-list {{ docker_executor_labels | join(',') }}
-      when: executor == 'docker'
+      when: executor == 'docker' and option == 'socket'
       run_once: true
 
     - name: Add user to the docker group
