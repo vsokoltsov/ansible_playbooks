@@ -30,7 +30,7 @@ variable "executor" {
 
 variable "docker_options" {
     type = list
-    description = "Options for the docker runner."
+    description = "Options for the docker runner. Possible values are: privileged, socket"
 }
 
 provider "google" {
